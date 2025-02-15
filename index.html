@@ -5,76 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网易云音乐下载器</title>
     <style>
-        /* 毛玻璃背景样式 */
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
+        /* 原有样式保持不变，新增以下内容 */
+        .help-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            display: none;
             justify-content: center;
             align-items: center;
-            background: url('https://source.unsplash.com/random/1920x1080') fixed;
-            background-size: cover;
-            font-family: 'Segoe UI', sans-serif;
+            z-index: 1000;
         }
 
-        .glass-container {
-            background: rgba(255, 255, 255, 0.1);
+        .help-content {
+            background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(12px) saturate(180%);
-            -webkit-backdrop-filter: blur(12px) saturate(180%);
             border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 2rem;
             width: 90%;
-            max-width: 400px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            position: relative;
         }
 
-        /* 输入框和按钮样式 */
-        .input-group {
-            margin-bottom: 1.5rem;
-        }
-
-        input, button {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+        .close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
             color: white;
-            font-size: 16px;
-        }
-
-        button {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
             cursor: pointer;
-            transition: transform 0.2s;
+            font-size: 1.5rem;
+            padding: 0 8px;
+            border-radius: 50%;
+            transition: background 0.3s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        /* 标题样式 */
-        h1 {
+        .help-text {
             color: white;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .help-link {
+            color: rgba(255, 255, 255, 0.8);
             text-align: center;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            margin-bottom: 1.5rem;
+            display: block;
+            margin-top: 1rem;
+            cursor: pointer;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
+    <!-- 原有容器保持不变 -->
     <div class="glass-container">
         <h1>🎵 音乐下载器</h1>
         <div class="input-group">
             <input type="text" id="songId" placeholder="输入歌曲ID（如：33894312）">
         </div>
         <button onclick="startDownload()">立即下载</button>
+        <p class="help-link" onclick="showHelp()">如何查看ID？</p>
+    </div>
+
+    <!-- 新增帮助弹窗 -->
+    <div class="help-modal" id="helpModal">
+        <div class="help-content">
+            <span class="close-btn" onclick="closeHelp()">×</span>
+            <h2 style="color:white; margin-top:0">如何获取歌曲ID</h2>
+            <div class="help-text">
+                <p>1. 打开网易云音乐网页版 (music.163.com)</p>
+                <p>2. 找到想要下载的歌曲</p>
+                <p>3. 查看浏览器地址栏，URL格式类似：</p>
+                <p style="background: rgba(0,0,0,0.2); padding: 8px; border-radius: 8px;">
+                    https://music.163.com/#/song?id=<strong style="color:#ff6b6b">12345678</strong>
+                </p>
+                <p>其中红色数字部分就是歌曲ID</p>
+                <p>在手机端分享的链接如果有字母，就粘贴进浏览器回车，，再查看url，会变成数字id</p>
+                <p>⚠️ 注意：部分歌曲因版权限制可能无法下载</p>
+            </div>
+        </div>
     </div>
 
     <script>
+        function showHelp() {
+            document.getElementById('helpModal').style.display = 'flex';
+        }
+
+        function closeHelp() {
+            document.getElementById('helpModal').style.display = 'none';
+        }
+
+        // 点击蒙层关闭
+        document.getElementById('helpModal').addEventListener('click', function(e) {
+            if(e.target === this) closeHelp();
+        });
+
+        // 下载函数
         function startDownload() {
             const songId = document.getElementById('songId').value;
             
@@ -83,10 +115,7 @@
                 return;
             }
 
-            // 构建下载链接
             const url = `https://music.163.com/song/media/outer/url?id=${songId}`;
-            
-            // 创建隐藏下载链接
             const link = document.createElement('a');
             link.href = url;
             link.download = `${songId}.mp3`;
